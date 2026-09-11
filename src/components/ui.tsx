@@ -1,6 +1,6 @@
 // 手写极简组件层：Btn / Field / Input / Select / Modal / ConfirmModal / Spinner / ToastHost / Badge / Card / EmptyState
 // 交互规范：Esc 关弹层、破坏性操作 Modal 二次确认、Toast 右下角 2.6s、微动效 ≤0.2s
-import { useEffect, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes } from 'react';
+import { useEffect, useState, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes } from 'react';
 import { X, AlertTriangle, Inbox } from 'lucide-react';
 import { useStore } from '../store';
 import { fmtCents } from '../format';
@@ -82,18 +82,32 @@ export function Modal({ title, onClose, children, wide = false }: {
   );
 }
 
-export function ConfirmModal({ title, desc, confirmLabel, onConfirm, onClose, loading = false }: {
+export function ConfirmModal({ title, desc, confirmLabel, onConfirm, onClose, loading = false, confirmWord }: {
   title: string; desc: string; confirmLabel: string; onConfirm: () => void; onClose: () => void; loading?: boolean;
+  confirmWord?: string; // 设置后须输入确认词才能点确认（高危操作）
 }) {
+  const [word, setWord] = useState('');
+  const blocked = confirmWord !== undefined && word !== confirmWord;
   return (
     <Modal title={title} onClose={onClose}>
       <div className="mb-4 flex items-start gap-3">
         <AlertTriangle size={20} className="mt-0.5 shrink-0 text-danger-500" />
-        <p className="text-sm text-ink-600">{desc}</p>
+        <p className="text-sm whitespace-pre-line text-ink-600">{desc}</p>
       </div>
+      {confirmWord !== undefined && (
+        <input
+          className="cell-input mb-4 w-full"
+          value={word}
+          onChange={(e) => setWord(e.target.value)}
+          placeholder={confirmWord}
+          aria-label="确认词"
+          // eslint-disable-next-line jsx-a11y/no-autofocus -- 确认词输入是打断式确认，聚焦输入框是刻意的
+          autoFocus
+        />
+      )}
       <div className="flex justify-end gap-2">
         <Btn onClick={onClose}>取消</Btn>
-        <Btn variant="danger" onClick={onConfirm} loading={loading}>{confirmLabel}</Btn>
+        <Btn variant="danger" onClick={onConfirm} loading={loading} disabled={blocked}>{confirmLabel}</Btn>
       </div>
     </Modal>
   );

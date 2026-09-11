@@ -228,6 +228,18 @@ export interface AccountValuationRow {
   };
 }
 
+export interface SeedStats {
+  accounts: number;
+  customers: number;
+  orders: number;
+  investments: number;
+  expenses: number;
+  months: number;
+  fromMonth: string;
+  toMonth: string;
+  totalRevenueCents: number;
+}
+
 export interface ApiErrorBody {
   error: string;
   message?: string;

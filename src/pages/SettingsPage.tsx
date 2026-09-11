@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useStore } from '../store';
 import { api } from '../api';
-import { fmtDateTime } from '../format';
+import { fmtCents, fmtDateTime } from '../format';
 import { Badge, Btn, Card, ConfirmModal, Field, Select, TextInput } from '../components/ui';
 import type { AuditEntry, PatToken, User } from '../types';
 
@@ -15,7 +15,83 @@ export function SettingsPage() {
       {isAdmin && <MembersSection />}
       <TokensSection />
       {isAdmin && <AuditSection />}
+      {isAdmin && <DangerZoneSection />}
     </div>
+  );
+}
+
+// S10/S11 危险区：仅 admin 渲染。初始化演示数据 + 清除全部业务数据（确认词门禁）
+function DangerZoneSection() {
+  const { t, toast, refreshBoot, onApiError } = useStore();
+  const [seedOpen, setSeedOpen] = useState(false);
+  const [wipeOpen, setWipeOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const seed = async () => {
+    setBusy(true);
+    try {
+      const { stats } = await api.seedDemo();
+      setSeedOpen(false);
+      toast(t('seedDemoDone', {
+        accounts: stats.accounts, customers: stats.customers, orders: stats.orders,
+        from: stats.fromMonth, to: stats.toMonth, revenue: fmtCents(stats.totalRevenueCents),
+      }));
+      await refreshBoot();
+    } catch (err) {
+      onApiError(err);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const wipe = async () => {
+    setBusy(true);
+    try {
+      await api.wipeData();
+      setWipeOpen(false);
+      toast(t('wipeDataDone'));
+      await refreshBoot();
+    } catch (err) {
+      onApiError(err);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Card title={t('dangerZone')}>
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-4">
+          <p className="text-sm text-ink-500">{t('seedDemoDesc')}</p>
+          <Btn variant="danger" className="shrink-0" onClick={() => setSeedOpen(true)}>{t('seedDemo')}</Btn>
+        </div>
+        <div className="flex items-center justify-between gap-4 border-t border-black/5 pt-3">
+          <p className="text-sm text-ink-500">{t('wipeDataDesc')}</p>
+          <Btn variant="danger" className="shrink-0" onClick={() => setWipeOpen(true)}>{t('wipeData')}</Btn>
+        </div>
+      </div>
+      {seedOpen && (
+        <ConfirmModal
+          title={t('seedDemoConfirmTitle')}
+          desc={t('seedDemoConfirmDesc')}
+          confirmLabel={t('seedDemo')}
+          onConfirm={() => void seed()}
+          onClose={() => setSeedOpen(false)}
+          loading={busy}
+        />
+      )}
+      {wipeOpen && (
+        <ConfirmModal
+          title={t('wipeDataConfirmTitle')}
+          desc={t('wipeDataConfirmDesc')}
+          confirmLabel={t('wipeData')}
+          confirmWord={t('wipeDataConfirmWord')}
+          onConfirm={() => void wipe()}
+          onClose={() => setWipeOpen(false)}
+          loading={busy}
+        />
+      )}
+    </Card>
   );
 }
 

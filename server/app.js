@@ -20,6 +20,7 @@ import investmentRoutes from './routes/investments.js';
 import expenseRoutes from './routes/expenses.js';
 import metricsRoutes from './routes/metrics.js';
 import settingsRoutes from './routes/settings.js';
+import adminRoutes from './routes/admin.js';
 import agentFileRoutes from './routes/agentFiles.js';
 import bootstrapRoutes from './routes/bootstrap.js';
 import { makeStaticHandler } from './static.js';
@@ -81,6 +82,7 @@ export async function buildServer({ dbPath, env = process.env, logger = false, s
   await app.register(expenseRoutes);
   await app.register(metricsRoutes);
   await app.register(settingsRoutes);
+  await app.register(adminRoutes);
   await app.register(agentFileRoutes, { skillsDir });
   await app.register(bootstrapRoutes);
 

@@ -6,6 +6,8 @@ export const ACTIONS = [
   'user.manage', // 用户管理（建号/禁用/改角色/重置密码）
   'token.revokeAny', // 吊销任意用户的 PAT
   'audit.read', // 审计日志查看
+  'admin.seed', // 一键初始化演示数据（S10）
+  'admin.wipe', // 一键清除全部业务数据（S11）
 ];
 
 const MATRIX = {
@@ -17,6 +19,8 @@ const MATRIX = {
     'user.manage': false,
     'token.revokeAny': false,
     'audit.read': false,
+    'admin.seed': false,
+    'admin.wipe': false,
   },
 };
 

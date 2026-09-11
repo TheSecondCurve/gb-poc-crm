@@ -8,6 +8,8 @@ const member = { id: 2, role: 'member', disabledAt: null };
 describe('can() 权限矩阵', () => {
   it('矩阵覆盖所有声明的权限点，无遗漏', () => {
     expect(ACTIONS.sort()).toEqual([
+      'admin.seed',
+      'admin.wipe',
       'audit.read',
       'business.read',
       'business.write',
@@ -25,7 +27,7 @@ describe('can() 权限矩阵', () => {
     expect(can(member, action)).toBe(true);
   });
 
-  it.each(['user.manage', 'token.revokeAny', 'audit.read'])('member 不可做 %s', (action) => {
+  it.each(['user.manage', 'token.revokeAny', 'audit.read', 'admin.seed', 'admin.wipe'])('member 不可做 %s', (action) => {
     expect(can(member, action)).toBe(false);
   });
 

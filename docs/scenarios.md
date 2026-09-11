@@ -44,3 +44,18 @@
 ---
 
 > P1/P2 场景（S6~S9）按需补测试，不在 CI 追踪门禁内；本期仍需交付（决策日志 K1）。
+
+## S10（P1）一键初始化演示数据
+
+| 验收标准 | 对应测试 |
+|---|---|
+| 当 admin 触发初始化时，应生成不少于 40 个账号、不少于 36 个月的订单流水，且任选连续 12 个月的订单总额超过 100 万元 | `S10: 生成 ≥40 账号、≥8 赛道、≥36 个月流水，任选连续 12 个月订单总额 >1e8 分`（server/routes/admin.test.mjs）；前端 `S10: 初始化演示数据成功后 Toast 显示统计`（src/pages/SettingsPage.test.tsx） |
+| 当库中已存在业务数据时，触发初始化应被拒绝并提示先清除 | `S10: 已有业务数据时拒绝（409 提示先清除）；重复触发同样 409（幂等防护）`（server/routes/admin.test.mjs） |
+| 当 member 角色触发初始化时，应返回 403 | `S10: member 触发 403，未登录 401`（server/routes/admin.test.mjs） |
+
+## S11（P1）一键清除全部业务数据
+
+| 验收标准 | 对应测试 |
+|---|---|
+| 当 admin 确认触发清除时，五张业务表应全部清空，用户/设置/令牌不受影响，且审计日志出现一条 `admin.wipe` 记录 | `S11: 清除后五业务表为空，users/settings/pat_tokens 保留，审计含 admin.wipe，仍可登录`（server/routes/admin.test.mjs） |
+| 当 member 角色触发清除时，应返回 403 | `S11: member 触发 403，未登录 401`（server/routes/admin.test.mjs）；前端 `S11: member 看不到危险区，admin 可见` / `S11: 清除需输入确认词「清除」才可点确认`（src/pages/SettingsPage.test.tsx） |

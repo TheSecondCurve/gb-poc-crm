@@ -2,7 +2,7 @@
 import type {
   Account, AccountDetail, AdOrder, ApiErrorBody, AuditEntry, BootData,
   Customer, CustomerDetail, CustomerListItem, IssuedToken, MetricCard,
-  OperatingExpense, AccountInvestment, PatToken, User,
+  OperatingExpense, AccountInvestment, PatToken, SeedStats, User,
 } from './types';
 
 export class ApiError extends Error {
@@ -112,6 +112,9 @@ export const api = {
   // 设置
   getSettings: () => get<{ settings: Record<string, string> }>('/api/settings'),
   updateSetting: (key: string, value: string) => patch<{ key: string; value: string }>('/api/settings', { key, value }),
+  // 管理员工具（S10/S11，仅 admin）
+  seedDemo: () => post<{ stats: SeedStats }>('/api/admin/seed-demo', {}),
+  wipeData: () => post<{ ok: true }>('/api/admin/wipe-data', {}),
 
   // 用户（admin）
   listUsers: () => get<{ users: User[] }>('/api/users'),

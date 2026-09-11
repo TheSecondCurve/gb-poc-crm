@@ -181,6 +181,19 @@ const zh = {
   auditTime: '时间',
   auditOperator: '操作人',
   adminOnly: '仅管理员可见',
+  // 危险区（S10/S11，仅 admin）
+  dangerZone: '危险区',
+  seedDemo: '初始化演示数据',
+  seedDemoDesc: '用于演示/试用/开发联调。生成约 45 个账号、41 个客户、三年多的订单流水与投入/费用记录。',
+  seedDemoConfirmTitle: '初始化演示数据？',
+  seedDemoConfirmDesc: '将一次性生成约 45 个账号、41 个客户、不少于 36 个月的订单流水（含买入/投流/运营费用）。\n注意：库中已有任何业务数据时会被拒绝执行，需先清除。',
+  seedDemoDone: '已生成：{accounts} 个账号 / {customers} 个客户 / {orders} 条订单（{from} ~ {to}），总收入 {revenue}',
+  wipeData: '清除全部业务数据',
+  wipeDataDesc: '物理删除账号、客户、广告订单、投入、费用五张表的全部数据。用户、设置、令牌保留。',
+  wipeDataConfirmTitle: '清除全部业务数据？',
+  wipeDataConfirmDesc: '此操作不可恢复！将物理清空：账号、客户、广告订单、账号投入、运营费用（五张表全部数据）。\n用户、设置、令牌不受影响。\n请输入「清除」以确认。',
+  wipeDataConfirmWord: '清除',
+  wipeDataDone: '全部业务数据已清除',
 };
 
 const en: typeof zh = {
@@ -354,6 +367,18 @@ const en: typeof zh = {
   auditTime: 'Time',
   auditOperator: 'Operator',
   adminOnly: 'Admin only',
+  dangerZone: 'Danger zone',
+  seedDemo: 'Seed demo data',
+  seedDemoDesc: 'For demo / trial / dev use. Generates ~45 accounts, 41 customers, and 3+ years of orders, investments and expenses.',
+  seedDemoConfirmTitle: 'Seed demo data?',
+  seedDemoConfirmDesc: 'This will generate ~45 accounts, 41 customers and at least 36 months of orders (with purchases, traffic spend and expenses).\nNote: refused when any business data already exists — wipe first.',
+  seedDemoDone: 'Seeded: {accounts} accounts / {customers} customers / {orders} orders ({from} ~ {to}), total revenue {revenue}',
+  wipeData: 'Wipe all business data',
+  wipeDataDesc: 'Physically deletes all rows in accounts, customers, ad orders, investments and expenses. Users, settings and tokens are kept.',
+  wipeDataConfirmTitle: 'Wipe all business data?',
+  wipeDataConfirmDesc: 'This cannot be undone! All data in accounts, customers, ad orders, investments and expenses will be physically deleted.\nUsers, settings and tokens are not affected.\nType "WIPE" to confirm.',
+  wipeDataConfirmWord: 'WIPE',
+  wipeDataDone: 'All business data wiped',
 };
 
 export type Lang = 'zh' | 'en';

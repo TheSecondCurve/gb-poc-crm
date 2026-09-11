@@ -25,3 +25,9 @@
 - **决策**：向 docs/standards/agent-integration.md「安全细节清单」追加一条：macOS bash 3.2 下 `$VAR` 后紧跟全角字符会吃掉多字节首字节、`${X:-{{PLACEHOLDER}}}` 嵌套花括号被错误解析；skill 脚本一律 `${VAR}` 花括号形式 + if/else 赋值。
 - **理由**：W3 实施 install.sh 时实测踩中（模板含 `{{BASE_URL}}` 占位符），不在原标准清单内；补入防止后续项目复发。
 - **推翻**：无（对标准安全清单的补充，非推翻）。
+
+## K5（2026-09-11）一键清除功能对业务表物理删除（软删规则的显式例外）
+
+- **决策**：S11「一键清除全部业务数据」对 accounts/customers/ad_orders/account_investments/operating_expenses 五张业务表做物理清空（TRUNCATE 语义），不走软删；用户/设置/令牌保留，写审计日志。
+- **理由**：该功能的用途就是演示数据清场/推倒重来，软删会让"已清除"的数据继续参与统计且无法达成"清空重来"；日常业务删除仍一律软删，不受影响。
+- **推翻**：analytics-design.md / AGENTS.md「软删不硬删」规则在 S11 这一个管理员工具上的例外。
