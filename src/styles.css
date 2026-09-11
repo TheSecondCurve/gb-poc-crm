@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-50: #eef6ff;
+  --color-brand-100: #d9eaff;
+  --color-brand-500: #2b7fff;
+  --color-brand-600: #1668e8;
+  --color-brand-700: #1253bd;
+  --color-danger-500: #e5484d;
+  --color-danger-600: #d13338;
+  --color-ink-900: #1a2332;
+  --color-ink-600: #4a5568;
+  --color-ink-400: #94a3b8;
+  --color-paper: #f7f8fa;
+}
+
+/* 等宽数字（YNAB 式交互规范 §5） */
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* 行内编辑框 */
+.cell-input {
+  border: none;
+  background: transparent;
+  border-bottom: 1px dashed var(--color-ink-400);
+  padding: 0 2px;
+  font: inherit;
+  outline: none;
+}
+.cell-input:focus {
+  border-bottom-color: var(--color-brand-500);
+}
+
+/* 微动效：fade / pop ≤0.2s ease-out */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes pop-in {
+  from { opacity: 0; transform: scale(0.96) translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+.anim-fade { animation: fade-in 0.15s ease-out; }
+.anim-pop { animation: pop-in 0.18s ease-out; }

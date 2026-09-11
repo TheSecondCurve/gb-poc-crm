@@ -1,0 +1,23 @@
+# CI：固定 Node 20。门禁顺序：lint → typecheck → test（含覆盖率）→ check:scenarios → check:drift。
+# e2e（Playwright）有意不做（engineering-standards §3 弱化决策，见 docs/design.md）。
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test:coverage
+      - run: npm run check:scenarios
+      - run: npm run check:drift
