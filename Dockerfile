@@ -1,8 +1,12 @@
 # 多阶段构建：前端 vite build → 生产依赖 → 运行时（非 root）
-# better-sqlite3 / argon2 在 node:20-slim（glibc）走官方预编译二进制，无需工具链。
+# better-sqlite3 / argon2 在部分 Node patch 版本无预编译二进制，npm ci 需源码编译，
+# 故每个跑 npm ci 的阶段都要装构建工具链；运行时阶段拷贝编好的 .node，无需工具链。
 
 # ---- 阶段 1：前端构建 ----
 FROM node:20-slim AS webbuild
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 make g++ \
+ && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -12,6 +16,9 @@ RUN npm run build
 
 # ---- 阶段 2：生产依赖 ----
 FROM node:20-slim AS deps
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 make g++ \
+ && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
