@@ -1,4 +1,4 @@
-# CI：固定 Node 20。门禁顺序：lint → typecheck → test（含覆盖率）→ check:scenarios → check:drift。
+# CI：固定 Node 24（jsdom/undici engines 要求 >=22.19，见 K7）。门禁顺序：lint → typecheck → test（含覆盖率）→ check:scenarios → check:drift。
 # e2e（Playwright）有意不做（engineering-standards §3 弱化决策，见 docs/design.md）。
 name: ci
 
@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
       - run: npm ci
       - run: npm run lint
