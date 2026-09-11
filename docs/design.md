@@ -37,3 +37,9 @@
 - **决策**：`/agent/*` 渲染 `{{BASE_URL}}` 时，Host 头从「内网白名单 + 回退 127.0.0.1」改为「严格字符集格式校验」：hostname / IPv4 / 方括号 IPv6 + 可选端口，一律可用（公网域名正常渲染）；含 shell 元字符等非法值返回 400，不再回退 `127.0.0.1`。scheme 取 `x-forwarded-proto` 首值（仅白名单 http/https），默认 http，以适配反代后的公网 HTTPS 部署。
 - **理由**：公网部署（gb-poc-crm.thesecondcurve.dev）实测踩中：域名不在内网白名单，脚本被渲染成 `http://127.0.0.1:3000`，用户本机无服务导致安装失败。防注入目的由字符集白名单达成（值不可能含引号/分号/空格/`$`/反引号），回退 127.0.0.1 反而制造"指向错误地址"的静默故障。
 - **推翻**：docs/standards/agent-integration.md 安全细节清单「非法值回退 127.0.0.1」一条（源自 gb-crm 纯内网部署场景）。
+
+## K7（2026-09-11）CI 门禁 Node 版本固定为 24（脱离 Docker 运行时的 20）
+
+- **决策**：CI workflow（ci.yml）node-version 从 20 升为 24，与 Docker 运行时（node:20-slim）版本脱钩。
+- **理由**：CI 从首次运行起全红，无一条绿记录：`jsdom@30` engines 要求 `^22.22.2 || ^24.15.0`，其依赖 `undici@8` 要求 `>=22.19.0`，且 undici 依赖 Node 22.19+ 才提供的 `worker_threads.markAsUncloneable`；Node 20 下 `npm run test:coverage` 必崩。GitHub Actions 亦已宣布 runner 默认 Node 24、Node 20 废弃。门禁跑的是开发态测试（jsdom 仅测试用），生产镜像不装 devDependencies，node:20-slim 运行服务端无此问题，故两边版本不必一致。
+- **推翻**：engineering-standards「CI 与生产运行时保持同一 Node 大版本」的默认对齐关系（本项目中仅保留「固定单一版本」的约束，版本号本身按依赖 engines 取 24）。
