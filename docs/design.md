@@ -31,3 +31,9 @@
 - **决策**：S11「一键清除全部业务数据」对 accounts/customers/ad_orders/account_investments/operating_expenses 五张业务表做物理清空（TRUNCATE 语义），不走软删；用户/设置/令牌保留，写审计日志。
 - **理由**：该功能的用途就是演示数据清场/推倒重来，软删会让"已清除"的数据继续参与统计且无法达成"清空重来"；日常业务删除仍一律软删，不受影响。
 - **推翻**：analytics-design.md / AGENTS.md「软删不硬删」规则在 S11 这一个管理员工具上的例外。
+
+## K7（2026-09-11）CI 门禁 Node 版本固定为 24（脱离 Docker 运行时的 20）
+
+- **决策**：CI workflow（ci.yml）node-version 从 20 升为 24，与 Docker 运行时（node:20-slim）版本脱钩。
+- **理由**：CI 从首次运行起全红，无一条绿记录：`jsdom@30` engines 要求 `^22.22.2 || ^24.15.0`，其依赖 `undici@8` 要求 `>=22.19.0`，且 undici 依赖 Node 22.19+ 才提供的 `worker_threads.markAsUncloneable`；Node 20 下 `npm run test:coverage` 必崩。GitHub Actions 亦已宣布 runner 默认 Node 24、Node 20 废弃。门禁跑的是开发态测试（jsdom 仅测试用），生产镜像不装 devDependencies，node:20-slim 运行服务端无此问题，故两边版本不必一致。
+- **推翻**：engineering-standards「CI 与生产运行时保持同一 Node 大版本」的默认对齐关系（本项目中仅保留「固定单一版本」的约束，版本号本身按依赖 engines 取 24）。
