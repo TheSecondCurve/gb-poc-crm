@@ -61,13 +61,28 @@ describe('/agent/* 公开端点', () => {
     expect(skill.body).toContain('# xhs-matrix');
   });
 
-  it('Host 头白名单校验：非法值回退 127.0.0.1，防 shell 注入', async () => {
-    await appWithSkills({ 'login.sh': 'BASE={{BASE_URL}}' });
+  it('Host 格式校验：公网域名正常渲染，非法值 400（K6）', async () => {
+    await appWithSkills({
+      'login.sh': '#!/bin/sh\ncurl {{BASE_URL}}/api/v1/auth/tokens\n',
+      'install.sh': '#!/bin/sh\necho {{BASE_URL}}\n',
+    });
+    // 公网域名（K6 修复场景）：渲染真实地址
+    const pub = await app.inject({ method: 'GET', url: '/agent/skill/xhs-matrix/install.sh', headers: { host: 'gb-poc-crm.example.com' } });
+    expect(pub.statusCode).toBe(200);
+    expect(pub.body).toContain('http://gb-poc-crm.example.com');
+    // 反代后的公网 HTTPS：scheme 跟随 x-forwarded-proto
+    const tls = await app.inject({ method: 'GET', url: '/agent/skill/xhs-matrix/install.sh', headers: { host: 'gb-poc-crm.example.com', 'x-forwarded-proto': 'https' } });
+    expect(tls.body).toContain('https://gb-poc-crm.example.com');
+    expect(tls.body).not.toContain('https://https');
+    // 内网/本机行为不变
+    const lan = await app.inject({ method: 'GET', url: '/agent/login.sh', headers: { host: '10.0.0.5:8080' } });
+    expect(lan.body).toContain('http://10.0.0.5:8080');
+    // 非法 Host（shell 注入尝试）：400 且不渲染进脚本
     const evil = await app.inject({ method: 'GET', url: '/agent/login.sh', headers: { host: 'evil.com; rm -rf /' } });
-    expect(evil.body).toContain('http://127.0.0.1');
+    expect(evil.statusCode).toBe(400);
     expect(evil.body).not.toContain('evil.com');
-    const ok = await app.inject({ method: 'GET', url: '/agent/login.sh', headers: { host: '10.0.0.5:8080' } });
-    expect(ok.body).toContain('http://10.0.0.5:8080');
+    const junk = await app.inject({ method: 'GET', url: '/agent/login.sh', headers: { host: 'x"`$IFS$(id)' } });
+    expect(junk.statusCode).toBe(400);
   });
 
   it('路径穿越被拒绝', async () => {

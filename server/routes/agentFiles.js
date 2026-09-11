@@ -6,13 +6,15 @@ import { httpError } from '../engine/errors.js';
 
 export const SKILL_NAME = 'xhs-matrix';
 
-// Host 白名单：localhost / 环回 / 私网 IPv4 / 常见内网主机名后缀；其余回退 127.0.0.1
-const HOST_WHITELIST = /^(localhost|127\.0\.0\.1|\[::1\]|::1|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}|[a-z0-9][a-z0-9.-]*\.(local|internal|lan))(:\d{1,5})?$/i;
+// Host 格式校验（K6）：hostname / IPv4 / 方括号 IPv6 + 可选端口。字符集白名单天然防 shell 注入，
+// 公网域名正常渲染；非法值一律 400，不再静默回退 127.0.0.1（回退会让脚本指向错误地址）。
+const HOST_PATTERN = /^(\[[0-9a-f:]+\]|[a-z0-9.-]+)(:\d{1,5})?$/i;
 
 function baseUrl(req) {
   const host = String(req.headers.host ?? '');
-  if (HOST_WHITELIST.test(host)) return `http://${host}`;
-  return 'http://127.0.0.1:3000';
+  if (!HOST_PATTERN.test(host)) throw httpError(400, 'bad_request', '非法 Host 头');
+  const proto = String(req.headers['x-forwarded-proto'] ?? '').split(',')[0].trim().toLowerCase();
+  return `${proto === 'https' ? 'https' : 'http'}://${host}`;
 }
 
 function serveSkillFile(req, skillsDir, fileName, { render }) {

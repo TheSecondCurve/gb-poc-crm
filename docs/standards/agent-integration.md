@@ -57,7 +57,7 @@ Agent 调客户端脚本 → Bearer PAT → 单一数据端点（SQL）→ 数�
 
 ### 安全细节清单（全是 gb-crm 踩过的坑，照抄）
 
-- 安装器渲染时对 `Host` 头做白名单校验，非法值回退 `127.0.0.1`，防 shell 注入；
+- 安装器渲染时对 `Host` 头做**格式校验**（hostname/IPv4/方括号 IPv6 + 可选端口，字符集白名单天然防 shell 注入），公网域名正常渲染；非法值 400，不静默回退（回退 `127.0.0.1` 会让脚本指向错误地址，gb-poc 公网部署实测踩中，见本项目 design.md K6）；
 - 凭证文件原子写入（tmp + rename），目录 700 / 文件 600；
 - 内网请求显式绕过 http_proxy（否则 localhost 被代理挂起）；
 - 自定义 User-Agent（默认 Python UA 会被 Cloudflare Bot Fight 拦）；
