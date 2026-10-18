@@ -1,21 +1,35 @@
-// 设置页即控制台：分区卡片（通用阈值 / 成员管理 admin / 令牌管理 / 审计日志 admin），每区独立保存
+// 设置页即控制台：版式照搬 gb-pmo —— 刊头 + 分区卡片（通用阈值 / 成员管理 admin / 令牌管理 / 审计日志 admin），每区独立保存
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useStore } from '../store';
 import { api } from '../api';
 import { fmtCents, fmtDateTime } from '../format';
 import { Badge, Btn, Card, ConfirmModal, Field, Select, TextInput } from '../components/ui';
+import { PageMasthead } from '../components/editorial';
 import type { AuditEntry, PatToken, User } from '../types';
 
 export function SettingsPage() {
-  const { user } = useStore();
+  const { t, user } = useStore();
   const isAdmin = user?.role === 'admin';
   return (
-    <div className="flex max-w-3xl flex-col gap-4">
-      <GeneralSection />
-      {isAdmin && <MembersSection />}
-      <TokensSection />
-      {isAdmin && <AuditSection />}
-      {isAdmin && <DangerZoneSection />}
+    <div className="space-y-8 md:space-y-10">
+      <PageMasthead
+        kicker={t('settingsKicker')}
+        title={t('navSettings')}
+        description={t('settingsDesc')}
+        aside={(
+          <div className="md:border-l md:border-[var(--color-line-strong)] md:pl-5">
+            <div className="text-[10px] font-semibold tracking-[0.16em] text-[var(--color-ink-faint)]">CONSOLE</div>
+            <div className="num mt-2 text-[12px] text-[var(--color-ink-soft)]">@{user?.username}</div>
+          </div>
+        )}
+      />
+      <div className="flex max-w-4xl flex-col gap-6">
+        <GeneralSection />
+        {isAdmin && <MembersSection />}
+        <TokensSection />
+        {isAdmin && <AuditSection />}
+        {isAdmin && <DangerZoneSection />}
+      </div>
     </div>
   );
 }
@@ -62,11 +76,11 @@ function DangerZoneSection() {
     <Card title={t('dangerZone')}>
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-4">
-          <p className="text-sm text-ink-500">{t('seedDemoDesc')}</p>
+          <p className="text-[13px] leading-6 text-[var(--color-ink-soft)]">{t('seedDemoDesc')}</p>
           <Btn variant="danger" className="shrink-0" onClick={() => setSeedOpen(true)}>{t('seedDemo')}</Btn>
         </div>
-        <div className="flex items-center justify-between gap-4 border-t border-black/5 pt-3">
-          <p className="text-sm text-ink-500">{t('wipeDataDesc')}</p>
+        <div className="flex items-center justify-between gap-4 border-t border-[var(--color-line)] pt-3">
+          <p className="text-[13px] leading-6 text-[var(--color-ink-soft)]">{t('wipeDataDesc')}</p>
           <Btn variant="danger" className="shrink-0" onClick={() => setWipeOpen(true)}>{t('wipeData')}</Btn>
         </div>
       </div>
@@ -176,21 +190,21 @@ function MembersSection() {
 
   return (
     <Card title={t('members')}>
-      <table className="mb-3 w-full text-sm">
+      <table className="mb-3 w-full text-[13px]">
         <tbody>
           {users.map((u) => (
-            <tr key={u.id} className="border-t border-black/5 first:border-0">
-              <td className="py-1.5">{u.displayName} <span className="text-xs text-ink-400">@{u.username}</span></td>
-              <td className="py-1.5"><Badge tone={u.role === 'admin' ? 'blue' : 'gray'}>{u.role === 'admin' ? t('roleAdmin') : t('roleMember')}</Badge></td>
-              <td className="py-1.5">{u.disabledAt && <Badge tone="red">{t('disabledTag')}</Badge>}</td>
-              <td className="py-1.5 text-right">
+            <tr key={u.id} className="border-b border-[var(--color-line)] last:border-0">
+              <td className="py-2.5">{u.displayName} <span className="text-[11px] text-[var(--color-ink-faint)]">@{u.username}</span></td>
+              <td className="py-2.5"><Badge tone={u.role === 'admin' ? 'blue' : 'gray'}>{u.role === 'admin' ? t('roleAdmin') : t('roleMember')}</Badge></td>
+              <td className="py-2.5">{u.disabledAt && <Badge tone="red">{t('disabledTag')}</Badge>}</td>
+              <td className="py-2.5 text-right">
                 <Btn onClick={() => void toggleDisable(u)}>{u.disabledAt ? t('enable') : t('disable')}</Btn>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      <form onSubmit={(e) => void create(e)} className="grid grid-cols-2 gap-3 border-t border-black/5 pt-3 md:grid-cols-5">
+      <form onSubmit={(e) => void create(e)} className="grid grid-cols-2 gap-3 border-t border-[var(--color-line)] pt-4 md:grid-cols-5">
         <Field label={t('username')}><TextInput value={username} onChange={(e) => setUsername(e.target.value)} required /></Field>
         <Field label={t('displayName')}><TextInput value={displayName} onChange={(e) => setDisplayName(e.target.value)} required /></Field>
         <Field label={t('password')}><TextInput type="password" value={password} onChange={(e) => setPassword(e.target.value)} required /></Field>
@@ -262,27 +276,27 @@ function TokensSection() {
   return (
     <Card title={t('tokens')}>
       {issued && (
-        <div className="mb-3 rounded-md border border-amber-200 bg-amber-50 p-3">
-          <p className="mb-1 text-xs text-amber-700">{t('tokenIssuedHint')}</p>
-          <code className="num block break-all rounded bg-white px-2 py-1 text-xs">{issued}</code>
+        <div className="mb-3 rounded-[3px] border border-[var(--color-warn)] bg-[var(--color-warn-soft)] p-3">
+          <p className="mb-1 text-[11px] leading-5 text-[var(--color-warn)]">{t('tokenIssuedHint')}</p>
+          <code className="num block break-all rounded-[3px] bg-[var(--color-card)] px-2 py-1 text-[12px]">{issued}</code>
         </div>
       )}
-      <table className="mb-3 w-full text-sm">
+      <table className="mb-3 w-full text-[13px]">
         <tbody>
           {tokens.map((tk) => (
-            <tr key={tk.id} className="border-t border-black/5 first:border-0">
-              <td className="py-1.5"><code className="num text-xs">xhp_{tk.prefix}…</code></td>
-              <td className="py-1.5"><Badge tone={tk.scope === 'write' ? 'amber' : 'gray'}>{tk.scope === 'write' ? t('scopeWrite') : t('scopeRead')}</Badge></td>
-              <td className="py-1.5 text-xs text-ink-400 num">{t('expiresAt')} {fmtDateTime(tk.expiresAt)}</td>
-              <td className="py-1.5">{tk.revokedAt && <Badge tone="red">{t('revokedTag')}</Badge>}</td>
-              <td className="py-1.5 text-right">
+            <tr key={tk.id} className="border-b border-[var(--color-line)] last:border-0">
+              <td className="py-2.5"><code className="num text-[12px]">xhp_{tk.prefix}…</code></td>
+              <td className="py-2.5"><Badge tone={tk.scope === 'write' ? 'amber' : 'gray'}>{tk.scope === 'write' ? t('scopeWrite') : t('scopeRead')}</Badge></td>
+              <td className="num py-2.5 text-[11px] text-[var(--color-ink-faint)]">{t('expiresAt')} {fmtDateTime(tk.expiresAt)}</td>
+              <td className="py-2.5">{tk.revokedAt && <Badge tone="red">{t('revokedTag')}</Badge>}</td>
+              <td className="py-2.5 text-right">
                 {!tk.revokedAt && <Btn onClick={() => setRevoking(tk)}>{t('revoke')}</Btn>}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      <form onSubmit={(e) => void issue(e)} className="grid grid-cols-2 gap-3 border-t border-black/5 pt-3 md:grid-cols-3">
+      <form onSubmit={(e) => void issue(e)} className="grid grid-cols-2 gap-3 border-t border-[var(--color-line)] pt-4 md:grid-cols-3">
         <Field label={t('password')}>
           <TextInput type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
         </Field>
@@ -318,26 +332,28 @@ function AuditSection() {
 
   return (
     <Card title={`${t('auditLog')}（${t('adminOnly')}）`}>
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="text-left text-xs text-ink-400">
-            <th className="py-1">{t('auditTime')}</th>
-            <th className="py-1">{t('auditOperator')}</th>
-            <th className="py-1">{t('auditAction')}</th>
-            <th className="py-1">{t('auditTarget')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {entries.map((e) => (
-            <tr key={e.id} className="border-t border-black/5">
-              <td className="py-1.5 num text-xs">{fmtDateTime(e.createdAt)}</td>
-              <td className="py-1.5">{e.username ?? '—'}</td>
-              <td className="py-1.5"><code className="text-xs">{e.action}</code></td>
-              <td className="py-1.5 text-xs text-ink-600">{e.targetType ? `${e.targetType}#${e.targetId ?? ''}` : '—'}</td>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[32rem] text-[13px]">
+          <thead className="text-left text-[10px] font-medium tracking-[0.08em] text-[var(--color-ink-soft)]">
+            <tr className="border-b border-[var(--color-line)] [&>th]:whitespace-nowrap [&>th]:py-2">
+              <th>{t('auditTime')}</th>
+              <th>{t('auditOperator')}</th>
+              <th>{t('auditAction')}</th>
+              <th>{t('auditTarget')}</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {entries.map((e) => (
+              <tr key={e.id} className="border-b border-[var(--color-line)] last:border-0">
+                <td className="num py-2 text-[12px]">{fmtDateTime(e.createdAt)}</td>
+                <td className="py-2">{e.username ?? '—'}</td>
+                <td className="py-2"><code className="text-[12px]">{e.action}</code></td>
+                <td className="py-2 text-[12px] text-[var(--color-ink-soft)]">{e.targetType ? `${e.targetType}#${e.targetId ?? ''}` : '—'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </Card>
   );
 }

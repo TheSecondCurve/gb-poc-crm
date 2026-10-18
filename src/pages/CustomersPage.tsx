@@ -1,10 +1,11 @@
-// 客户页（S5）：列表（类型/累计金额/最近合作）+ 新建/编辑；详情见 CustomerDetailPage
+// 客户页（S5）：版式照搬 gb-pmo —— 刊头 + 编辑部表格（类型/累计金额/最近合作）+ 新建/编辑；详情见 CustomerDetailPage
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useStore } from '../store';
 import { api } from '../api';
 import { navigate } from '../router';
 import { fmtDate, fmtDateTime } from '../format';
-import { Amount, Badge, Btn, Card, Field, Modal, Select, Spinner, TextInput } from '../components/ui';
+import { Amount, Badge, Btn, Field, Modal, Select, Spinner, TextInput } from '../components/ui';
+import { PageMasthead } from '../components/editorial';
 import type { CustomerListItem } from '../types';
 
 const typeTone = { brand: 'blue', agency: 'amber', platform: 'green' } as const;
@@ -30,44 +31,64 @@ export function CustomersPage() {
   if (!customers) return <Spinner />;
 
   return (
-    <Card
-      title={t('customerList')}
-      extra={
-        <div className="flex gap-2">
-          <Select aria-label={t('customerType')} value={type} onChange={(e) => setType(e.target.value)} className="w-auto py-1 text-xs">
-            <option value="">{t('allTypes')}</option>
-            <option value="brand">{t('typeBrand')}</option>
-            <option value="agency">{t('typeAgency')}</option>
-            <option value="platform">{t('typePlatform')}</option>
-          </Select>
-          <Btn variant="primary" onClick={() => setEditing('new')}>{t('newCustomer')}</Btn>
+    <div className="space-y-8 md:space-y-10">
+      <PageMasthead
+        kicker={t('customersKicker')}
+        title={t('navCustomers')}
+        description={t('customersDesc')}
+        aside={(
+          <div className="md:border-l md:border-[var(--color-line-strong)] md:pl-5">
+            <div className="text-[10px] font-semibold tracking-[0.16em] text-[var(--color-ink-faint)]">CLIENT INDEX</div>
+            <div className="num mt-2 text-[12px] text-[var(--color-ink-soft)]">{customers.length} {t('customersUnit')}</div>
+          </div>
+        )}
+        actions={(
+          <>
+            <Select aria-label={t('customerType')} value={type} onChange={(e) => setType(e.target.value)} className="w-auto! rounded-full py-1.5 text-[12px]">
+              <option value="">{t('allTypes')}</option>
+              <option value="brand">{t('typeBrand')}</option>
+              <option value="agency">{t('typeAgency')}</option>
+              <option value="platform">{t('typePlatform')}</option>
+            </Select>
+            <Btn variant="primary" onClick={() => setEditing('new')}>+ {t('newCustomer')}</Btn>
+          </>
+        )}
+      />
+
+      <section className="editorial-enter-late">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-y border-[var(--color-line)] py-4">
+          <div className="text-[13px] font-semibold tracking-[-0.01em]">{t('customerList')}</div>
         </div>
-      }
-    >
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="text-left text-xs text-ink-400">
-            <th className="py-1">{t('customerName')}</th>
-            <th className="py-1">{t('customerType')}</th>
-            <th className="py-1">{t('wechat')}</th>
-            <th className="py-1 text-right">{t('totalCentsLabel')}</th>
-            <th className="py-1">{t('lastOrderAt')}</th>
-            <th className="py-1">{t('actions')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {customers.map((c) => (
-            <tr key={c.id} className="border-t border-black/5">
-              <td className="cursor-pointer py-2 hover:text-brand-600" onClick={() => navigate(`customers/${c.id}`)}>{c.name}</td>
-              <td className="py-2"><Badge tone={typeTone[c.type]}>{t(typeLabel[c.type])}</Badge></td>
-              <td className="py-2 text-ink-600">{c.wechat ?? '—'}</td>
-              <td className="py-2 text-right"><Amount cents={c.totals.totalCents} /></td>
-              <td className="py-2 text-ink-600 num" title={fmtDateTime(c.totals.lastOrderAt)}>{fmtDate(c.totals.lastOrderAt)}</td>
-              <td className="py-2"><Btn onClick={() => setEditing(c)}>{t('edit')}</Btn></td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        <div className="overflow-x-auto border-b border-[var(--color-line-strong)] bg-[var(--color-card)]/45">
+          <table className="w-full min-w-[42rem] text-[13px]">
+            <thead className="bg-[var(--color-panel)]/45 text-left text-[10px] font-medium tracking-[0.08em] text-[var(--color-ink-soft)]">
+              <tr className="border-b border-[var(--color-line)] [&>th]:whitespace-nowrap [&>th]:px-4 [&>th]:py-3">
+                <th>{t('customerName')}</th>
+                <th>{t('customerType')}</th>
+                <th>{t('wechat')}</th>
+                <th className="text-right">{t('totalCentsLabel')}</th>
+                <th>{t('lastOrderAt')}</th>
+                <th>{t('actions')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {customers.map((c) => (
+                <tr key={c.id} className="border-b border-[var(--color-line)] transition-colors last:border-0 hover:bg-[var(--color-panel)]/60 [&>td]:px-4 [&>td]:py-3.5">
+                  <td>
+                    <span className="display-type editorial-link cursor-pointer text-[15px] font-semibold" onClick={() => navigate(`customers/${c.id}`)}>{c.name}</span>
+                  </td>
+                  <td><Badge tone={typeTone[c.type]}>{t(typeLabel[c.type])}</Badge></td>
+                  <td className="text-[var(--color-ink-soft)]">{c.wechat ?? '—'}</td>
+                  <td className="text-right"><Amount cents={c.totals.totalCents} /></td>
+                  <td className="num whitespace-nowrap text-[var(--color-ink-soft)]" title={fmtDateTime(c.totals.lastOrderAt)}>{fmtDate(c.totals.lastOrderAt)}</td>
+                  <td><Btn onClick={() => setEditing(c)}>{t('edit')}</Btn></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       {editing && (
         <CustomerModal
           customer={editing === 'new' ? null : editing}
@@ -75,7 +96,7 @@ export function CustomersPage() {
           onSaved={() => { setEditing(null); void load(); }}
         />
       )}
-    </Card>
+    </div>
   );
 }
 

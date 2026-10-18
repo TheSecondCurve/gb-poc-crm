@@ -1,14 +1,14 @@
-// 手写极简组件层：Btn / Field / Input / Select / Modal / ConfirmModal / Spinner / ToastHost / Badge / Card / EmptyState
-// 交互规范：Esc 关弹层、破坏性操作 Modal 二次确认、Toast 右下角 2.6s、微动效 ≤0.2s
+// 手写极简组件层：Btn / Field / TextInput / Select / Modal / ConfirmModal / Spinner / ToastHost / Badge / Card / Amount / EmptyState
+// 版式语言完全照搬 gb-pmo 编辑部刊物风；交互规范不变：Esc 关弹层、破坏性操作 Modal 二次确认、Toast 右下角 2.6s、微动效 ≤0.2s
 import { useEffect, useState, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes } from 'react';
-import { X, AlertTriangle, Inbox } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { useStore } from '../store';
 import { fmtCents } from '../format';
 
 export function Spinner() {
   return (
-    <div className="flex justify-center py-10" role="status" aria-label="loading">
-      <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
+    <div className="flex h-40 items-center justify-center text-[12px] tracking-[0.12em] text-[var(--color-ink-soft)]" role="status" aria-label="loading">
+      加载中…
     </div>
   );
 }
@@ -18,11 +18,11 @@ type BtnVariant = 'primary' | 'ghost' | 'danger';
 export function Btn({
   variant = 'ghost', loading = false, className = '', children, disabled, ...rest
 }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: BtnVariant; loading?: boolean }) {
-  const base = 'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
+  const base = 'inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full font-medium transition-[color,background-color,border-color,box-shadow,transform] duration-150 disabled:cursor-not-allowed disabled:opacity-45 min-h-9 px-4 py-2 text-[13px]';
   const styles: Record<BtnVariant, string> = {
-    primary: 'bg-brand-600 text-white hover:bg-brand-700',
-    ghost: 'text-ink-600 hover:bg-black/5',
-    danger: 'bg-danger-500 text-white hover:bg-danger-600',
+    primary: 'border border-[var(--color-brand)] bg-[var(--color-brand)] text-white shadow-[0_4px_14px_rgb(52_79_196/0.16)] hover:-translate-y-px hover:bg-[var(--color-brand-deep)]',
+    ghost: 'border border-[var(--color-line-strong)] bg-[var(--color-card)] text-[var(--color-ink)] hover:-translate-y-px hover:border-[var(--color-ink-soft)] hover:shadow-[0_3px_10px_rgb(32_35_31/0.06)]',
+    danger: 'border border-[var(--color-bad)] bg-[var(--color-bad-soft)] text-[var(--color-bad)] hover:-translate-y-px hover:bg-[var(--color-bad)] hover:text-white',
   };
   return (
     <button className={`${base} ${styles[variant]} ${className}`} disabled={disabled || loading} {...rest}>
@@ -35,14 +35,14 @@ export function Btn({
 export function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-medium text-ink-600">{label}</span>
+      <span className="mb-1.5 block text-[11px] font-medium leading-5 text-[var(--color-ink-soft)]">{label}</span>
       {children}
-      {hint && <span className="mt-1 block text-xs text-ink-400">{hint}</span>}
+      {hint && <span className="mt-1 block text-[11px] text-[var(--color-ink-faint)]">{hint}</span>}
     </label>
   );
 }
 
-const inputCls = 'w-full rounded-md border border-black/10 bg-white px-2.5 py-1.5 text-sm outline-none focus:border-brand-500';
+export const inputCls = 'w-full min-w-0 rounded-[3px] border border-[var(--color-line-strong)] bg-[var(--color-card)] px-3 py-2 text-[13px] text-[var(--color-ink)] outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-[var(--color-ink-faint)] focus:border-[var(--color-brand)] focus:shadow-[0_0_0_3px_var(--color-brand-soft)]';
 
 export function TextInput(props: InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={`${inputCls} ${props.className ?? ''}`} />;
@@ -63,20 +63,23 @@ export function Modal({ title, onClose, children, wide = false }: {
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
   return (
-    <div className="anim-fade fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4" onClick={onClose}>
+    <div
+      className="fade-in fixed inset-0 z-50 flex items-center justify-center bg-[#171914]/45 p-4 backdrop-blur-[2px]"
+      onMouseDown={(e) => e.target === e.currentTarget && onClose()}
+    >
       <div
         role="dialog"
         aria-label={title}
-        className={`anim-pop max-h-[85vh] w-full overflow-y-auto rounded-lg bg-white p-5 shadow-xl ${wide ? 'max-w-2xl' : 'max-w-md'}`}
-        onClick={(e) => e.stopPropagation()}
+        className={`pop-in max-h-[88dvh] w-full overflow-y-auto rounded-[6px] border border-[var(--color-line)] bg-[var(--color-card)] shadow-[var(--shadow-editorial)] ${wide ? 'max-w-3xl' : 'max-w-md'}`}
       >
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-base font-semibold text-ink-900">{title}</h2>
-          <button onClick={onClose} aria-label="close" className="rounded p-1 text-ink-400 hover:bg-black/5">
-            <X size={16} />
-          </button>
+        <div className="flex items-center justify-between gap-4 border-b border-[var(--color-line)] px-5 py-4 md:px-6">
+          <div className="display-type text-[19px] font-semibold">{title}</div>
+          <button
+            onClick={onClose} aria-label="close"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--color-ink-soft)] transition-colors hover:bg-[var(--color-panel)] hover:text-[var(--color-ink)]"
+          >✕</button>
         </div>
-        {children}
+        <div className="p-5 md:p-6">{children}</div>
       </div>
     </div>
   );
@@ -91,8 +94,8 @@ export function ConfirmModal({ title, desc, confirmLabel, onConfirm, onClose, lo
   return (
     <Modal title={title} onClose={onClose}>
       <div className="mb-4 flex items-start gap-3">
-        <AlertTriangle size={20} className="mt-0.5 shrink-0 text-danger-500" />
-        <p className="text-sm whitespace-pre-line text-ink-600">{desc}</p>
+        <AlertTriangle size={20} className="mt-0.5 shrink-0 text-[var(--color-bad)]" />
+        <p className="whitespace-pre-line text-[13px] leading-6 text-[var(--color-ink-soft)]">{desc}</p>
       </div>
       {confirmWord !== undefined && (
         <input
@@ -121,7 +124,11 @@ export function ToastHost() {
         <div
           key={t.id}
           role="status"
-          className={`anim-pop rounded-md px-3.5 py-2 text-sm text-white shadow-lg ${t.kind === 'err' ? 'bg-danger-500' : 'bg-ink-900'}`}
+          className={`pop-in rounded-[4px] border px-3.5 py-2 text-[13px] shadow-[var(--shadow-float)] ${
+            t.kind === 'err'
+              ? 'border-[var(--color-bad)] bg-[var(--color-bad-soft)] text-[var(--color-bad)]'
+              : 'border-[var(--color-ink)] bg-[var(--color-ink)] text-[var(--color-card)]'
+          }`}
         >
           {t.msg}
         </div>
@@ -130,46 +137,63 @@ export function ToastHost() {
   );
 }
 
+// Tone→底色的映射在组件层唯一（Badge 共用；色彩语义与 gb-pmo 同源）
 export function Badge({ tone = 'gray', children }: { tone?: 'gray' | 'green' | 'amber' | 'red' | 'blue'; children: ReactNode }) {
   const tones = {
-    gray: 'bg-black/5 text-ink-600',
-    green: 'bg-green-100 text-green-700',
-    amber: 'bg-amber-100 text-amber-700',
-    red: 'bg-red-100 text-red-700',
-    blue: 'bg-brand-50 text-brand-700',
+    gray: 'bg-[var(--color-panel)] text-[var(--color-ink-soft)]',
+    green: 'bg-[var(--color-ok-soft)] text-[var(--color-ok)]',
+    amber: 'bg-[var(--color-warn-soft)] text-[var(--color-warn)]',
+    red: 'bg-[var(--color-bad-soft)] text-[var(--color-bad)]',
+    blue: 'bg-[var(--color-brand-soft)] text-[var(--color-brand)]',
   } as const;
-  return <span className={`inline-block rounded px-1.5 py-0.5 text-xs ${tones[tone]}`}>{children}</span>;
+  return <span className={`inline-flex items-center whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-semibold leading-4 ${tones[tone]}`}>{children}</span>;
 }
 
 export function Card({ title, extra, children, className = '' }: {
   title?: ReactNode; extra?: ReactNode; children: ReactNode; className?: string;
 }) {
   return (
-    <section className={`rounded-lg border border-black/5 bg-white p-4 shadow-sm ${className}`}>
-      {title && (
-        <header className="mb-3 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-ink-900">{title}</h3>
-          {extra}
+    <section className={`editorial-enter-late rounded-[5px] border border-[var(--color-line)] bg-[var(--color-card)] ${className}`}>
+      {(title || extra) && (
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-line)] px-5 py-3.5 md:px-6">
+          <div className="text-[14px] font-semibold tracking-[-0.01em]">{title}</div>
+          <div className="flex flex-wrap items-center gap-2">{extra}</div>
         </header>
       )}
-      {children}
+      <div className="p-5 md:p-6">{children}</div>
     </section>
+  );
+}
+
+/** 编辑部式数据块：小标签 + 超大细体等宽数字 */
+export function StatBlock({ label, children, accent, aside }: {
+  label: string; children: ReactNode; accent?: 'ok' | 'warn' | 'bad'; aside?: ReactNode;
+}) {
+  const accentCls = accent === 'bad' ? 'text-[var(--color-bad)]' : accent === 'warn' ? 'text-[var(--color-warn)]' : accent === 'ok' ? 'text-[var(--color-ok)]' : 'text-[var(--color-ink)]';
+  return (
+    <div className="flex flex-col justify-between border-b border-[var(--color-line)] p-5 last:border-b-0 md:p-6 [&:not(:last-child)]:sm:border-r">
+      <div className="flex items-start justify-between gap-3">
+        <div className="text-[11px] text-[var(--color-ink-soft)]">{label}</div>
+        {aside}
+      </div>
+      <div className={`num mt-4 text-[34px] font-light leading-none tracking-[-0.05em] ${accentCls}`}>{children}</div>
+    </div>
   );
 }
 
 export function Amount({ cents, signed = false, className = '' }: { cents: number | null | undefined; signed?: boolean; className?: string }) {
   const v = cents ?? 0;
-  const color = signed ? (v > 0 ? 'text-green-600' : v < 0 ? 'text-danger-500' : 'text-ink-600') : 'text-ink-900';
+  const color = signed ? (v > 0 ? 'text-[var(--color-ok)]' : v < 0 ? 'text-[var(--color-bad)]' : 'text-[var(--color-ink-soft)]') : 'text-[var(--color-ink)]';
   return <span className={`num ${color} ${className}`}>{signed && v > 0 ? '+' : ''}{fmtCents(v)}</span>;
 }
 
 export function EmptyState({ title, desc, children }: { title: string; desc?: string; children?: ReactNode }) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-black/10 bg-white px-6 py-14 text-center">
-      <Inbox size={28} className="text-ink-400" />
-      <p className="text-sm font-medium text-ink-900">{title}</p>
-      {desc && <p className="max-w-md text-xs text-ink-600">{desc}</p>}
-      {children && <div className="mt-2 flex gap-2">{children}</div>}
+    <div className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-[5px] border border-[var(--color-line)] bg-[var(--color-card)] px-6 py-14 text-center">
+      <span aria-hidden="true" className="mb-1 block h-px w-8 bg-[var(--color-line-strong)]" />
+      <p className="display-type text-[22px] text-[var(--color-ink)]">{title}</p>
+      {desc && <p className="max-w-md text-[13px] leading-6 text-[var(--color-ink-soft)]">{desc}</p>}
+      {children && <div className="mt-4 flex flex-wrap justify-center gap-2">{children}</div>}
     </div>
   );
 }
