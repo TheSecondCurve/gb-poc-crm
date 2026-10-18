@@ -1,9 +1,10 @@
-// 运营费用页（S7）：录入（工资/办公/其他）+ 列表 + 多选批量删除
+// 运营费用页（S7）：版式照搬 gb-pmo —— 刊头 + 录入卡片 + 编辑部流水表 + 多选批量删除浮动条
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useStore } from '../store';
 import { api } from '../api';
 import { fmtDate, parseYuan, dateInputToTs } from '../format';
 import { Amount, Badge, Btn, Card, ConfirmModal, Field, Select, Spinner, TextInput } from '../components/ui';
+import { PageMasthead } from '../components/editorial';
 import type { OperatingExpense } from '../types';
 
 const catLabel = { salary: 'expSalary', office: 'expOffice', other: 'expOther' } as const;
@@ -70,7 +71,27 @@ export function ExpensesPage() {
   if (!expenses) return <Spinner />;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="space-y-8 md:space-y-10">
+      <PageMasthead
+        kicker={t('expKicker')}
+        title={t('navExpenses')}
+        description={t('expDesc')}
+        aside={(
+          <div className="md:border-l md:border-[var(--color-line-strong)] md:pl-5">
+            <div className="text-[10px] font-semibold tracking-[0.16em] text-[var(--color-ink-faint)]">OVERHEAD</div>
+            <div className="num mt-2 text-[12px] text-[var(--color-ink-soft)]">{expenses.length} {t('recordsUnit')}</div>
+          </div>
+        )}
+        actions={(
+          <Select aria-label={t('expenseCategory')} value={category} onChange={(e) => setCategory(e.target.value)} className="w-auto! rounded-full py-1.5 text-[12px]">
+            <option value="">{t('all')}{t('expenseCategory')}</option>
+            <option value="salary">{t('expSalary')}</option>
+            <option value="office">{t('expOffice')}</option>
+            <option value="other">{t('expOther')}</option>
+          </Select>
+        )}
+      />
+
       <Card title={t('newExpense')}>
         <form onSubmit={(e) => void submit(e)} className="grid grid-cols-2 gap-3 md:grid-cols-5">
           <Field label={t('expenseCategory')}>
@@ -87,54 +108,50 @@ export function ExpensesPage() {
         </form>
       </Card>
 
-      <Card
-        title={t('expenseList')}
-        extra={
-          <Select aria-label={t('expenseCategory')} value={category} onChange={(e) => setCategory(e.target.value)} className="w-auto py-1 text-xs">
-            <option value="">{t('all')}{t('expenseCategory')}</option>
-            <option value="salary">{t('expSalary')}</option>
-            <option value="office">{t('expOffice')}</option>
-            <option value="other">{t('expOther')}</option>
-          </Select>
-        }
-      >
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-xs text-ink-400">
-              <th className="w-8 py-1" />
-              <th className="py-1">{t('spentAt')}</th>
-              <th className="py-1">{t('expenseCategory')}</th>
-              <th className="py-1 text-right">{t('amount')}</th>
-              <th className="py-1">{t('note')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {expenses.map((e) => (
-              <tr key={e.id} className="border-t border-black/5">
-                <td className="py-1.5">
-                  <input
-                    type="checkbox"
-                    aria-label={`select-${e.id}`}
-                    checked={selected.has(e.id)}
-                    onChange={() => setSelected((prev) => {
-                      const next = new Set(prev);
-                      if (next.has(e.id)) next.delete(e.id); else next.add(e.id);
-                      return next;
-                    })}
-                  />
-                </td>
-                <td className="py-1.5 num">{fmtDate(e.spentAt)}</td>
-                <td className="py-1.5"><Badge tone="gray">{t(catLabel[e.category])}</Badge></td>
-                <td className="py-1.5 text-right"><Amount cents={e.amountCents} /></td>
-                <td className="py-1.5 text-ink-600">{e.note ?? '—'}</td>
+      <section className="editorial-enter-late">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-y border-[var(--color-line)] py-4">
+          <div className="text-[13px] font-semibold tracking-[-0.01em]">{t('expenseList')}</div>
+        </div>
+        <div className="overflow-x-auto border-b border-[var(--color-line-strong)] bg-[var(--color-card)]/45">
+          <table className="w-full min-w-[32rem] text-[13px]">
+            <thead className="bg-[var(--color-panel)]/45 text-left text-[10px] font-medium tracking-[0.08em] text-[var(--color-ink-soft)]">
+              <tr className="border-b border-[var(--color-line)] [&>th]:whitespace-nowrap [&>th]:px-4 [&>th]:py-3">
+                <th className="w-8" />
+                <th>{t('spentAt')}</th>
+                <th>{t('expenseCategory')}</th>
+                <th className="text-right">{t('amount')}</th>
+                <th>{t('note')}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </Card>
+            </thead>
+            <tbody>
+              {expenses.map((e) => (
+                <tr key={e.id} className="border-b border-[var(--color-line)] transition-colors last:border-0 hover:bg-[var(--color-panel)]/60 [&>td]:px-4 [&>td]:py-3.5">
+                  <td>
+                    <input
+                      type="checkbox"
+                      aria-label={`select-${e.id}`}
+                      checked={selected.has(e.id)}
+                      onChange={() => setSelected((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(e.id)) next.delete(e.id); else next.add(e.id);
+                        return next;
+                      })}
+                      className="accent-[var(--color-brand)]"
+                    />
+                  </td>
+                  <td className="num whitespace-nowrap">{fmtDate(e.spentAt)}</td>
+                  <td><Badge tone="gray">{t(catLabel[e.category])}</Badge></td>
+                  <td className="text-right"><Amount cents={e.amountCents} /></td>
+                  <td className="text-[var(--color-ink-soft)]">{e.note ?? '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
       {selected.size > 0 && (
-        <div className="anim-pop fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-3 rounded-lg bg-ink-900 px-4 py-2.5 text-sm text-white shadow-xl">
+        <div className="pop-in fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-3 rounded-full border border-[var(--color-ink)] bg-[var(--color-ink)] px-5 py-2.5 text-[13px] text-[var(--color-card)] shadow-[var(--shadow-float)]">
           <span>{t('selected', { n: selected.size })}</span>
           <Btn variant="danger" onClick={() => setBatchConfirm(true)}>{t('batchDelete')}</Btn>
         </div>

@@ -1,10 +1,12 @@
-// 账号页（S1）：列表（状态/赛道/负责人筛选）+ 新建（含买入成本，自动生成买入投入的事前提示）
+// 账号页（S1）：版式照搬 gb-pmo —— 刊头 + 录入卡片 + 编辑部表格（状态/赛道/负责人筛选），
+// 新建含买入成本，自动生成买入投入的事前提示
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useStore } from '../store';
 import { api } from '../api';
 import { navigate } from '../router';
 import { fmtDate, parseYuan, dateInputToTs } from '../format';
 import { Badge, Btn, Card, EmptyState, Field, Select, Spinner, TextInput } from '../components/ui';
+import { PageMasthead } from '../components/editorial';
 import type { Account } from '../types';
 
 const statusTone = { warming: 'amber', active: 'green', sealed: 'red' } as const;
@@ -36,56 +38,70 @@ export function AccountsPage() {
   if (!accounts) return <Spinner />;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="space-y-8 md:space-y-10">
+      <PageMasthead
+        kicker={t('accountsKicker')}
+        title={t('navAccounts')}
+        description={t('accountsDesc')}
+        aside={(
+          <div className="md:border-l md:border-[var(--color-line-strong)] md:pl-5">
+            <div className="text-[10px] font-semibold tracking-[0.16em] text-[var(--color-ink-faint)]">ACCOUNT INDEX</div>
+            <div className="num mt-2 text-[12px] text-[var(--color-ink-soft)]">{accounts.length} {t('accountsUnit')}</div>
+          </div>
+        )}
+      />
+
       <NewAccountCard onCreated={() => void load()} />
-      <Card
-        title={t('accountList')}
-        extra={
-          <div className="flex gap-2">
-            <Select aria-label={t('status')} value={status} onChange={(e) => setStatus(e.target.value)} className="w-auto py-1 text-xs">
+
+      <section className="editorial-enter-late">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-y border-[var(--color-line)] py-4">
+          <div className="text-[13px] font-semibold tracking-[-0.01em]">{t('accountList')}</div>
+          <div className="flex flex-wrap gap-2">
+            <Select aria-label={t('status')} value={status} onChange={(e) => setStatus(e.target.value)} className="w-auto! rounded-full py-1.5 text-[12px]">
               <option value="">{t('all')}{t('status')}</option>
               <option value="warming">{t('statusWarming')}</option>
               <option value="active">{t('statusActive')}</option>
               <option value="sealed">{t('statusSealed')}</option>
             </Select>
-            <Select aria-label={t('categoryLabel')} value={category} onChange={(e) => setCategory(e.target.value)} className="w-auto py-1 text-xs">
+            <Select aria-label={t('categoryLabel')} value={category} onChange={(e) => setCategory(e.target.value)} className="w-auto! rounded-full py-1.5 text-[12px]">
               <option value="">{t('allCategories')}</option>
               {categories.map((c) => <option key={c} value={c}>{c}</option>)}
             </Select>
-            <Select aria-label={t('ownerLabel')} value={ownerId} onChange={(e) => setOwnerId(e.target.value)} className="w-auto py-1 text-xs">
+            <Select aria-label={t('ownerLabel')} value={ownerId} onChange={(e) => setOwnerId(e.target.value)} className="w-auto! rounded-full py-1.5 text-[12px]">
               <option value="">{t('allOwners')}</option>
               {(boot?.users ?? []).filter((u) => !u.disabledAt).map((u) => <option key={u.id} value={u.id}>{u.displayName}</option>)}
             </Select>
           </div>
-        }
-      >
+        </div>
         {accounts.length === 0 ? (
-          <EmptyState title={t('emptyDashboardTitle')} desc={t('autoPurchaseHint')} />
+          <div className="py-6"><EmptyState title={t('emptyDashboardTitle')} desc={t('autoPurchaseHint')} /></div>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-xs text-ink-400">
-                <th className="py-1">{t('accountName')}</th>
-                <th className="py-1">{t('categoryLabel')}</th>
-                <th className="py-1">{t('status')}</th>
-                <th className="py-1">{t('ownerLabel')}</th>
-                <th className="py-1">{t('purchasedAt')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {accounts.map((a) => (
-                <tr key={a.id} className="cursor-pointer border-t border-black/5 hover:bg-black/[0.02]" onClick={() => navigate(`accounts/${a.id}`)}>
-                  <td className="py-2">{a.name}</td>
-                  <td className="py-2 text-ink-600">{a.category}</td>
-                  <td className="py-2"><Badge tone={statusTone[a.status]}>{t(`status${a.status === 'warming' ? 'Warming' : a.status === 'active' ? 'Active' : 'Sealed'}`)}</Badge></td>
-                  <td className="py-2 text-ink-600">{boot?.users.find((u) => u.id === a.ownerId)?.displayName ?? t('ownerNone')}</td>
-                  <td className="py-2 text-ink-600 num">{fmtDate(a.purchasedAt)}</td>
+          <div className="overflow-x-auto border-b border-[var(--color-line-strong)] bg-[var(--color-card)]/45">
+            <table className="w-full min-w-[36rem] text-[13px]">
+              <thead className="bg-[var(--color-panel)]/45 text-left text-[10px] font-medium tracking-[0.08em] text-[var(--color-ink-soft)]">
+                <tr className="border-b border-[var(--color-line)] [&>th]:whitespace-nowrap [&>th]:px-4 [&>th]:py-3">
+                  <th>{t('accountName')}</th>
+                  <th>{t('categoryLabel')}</th>
+                  <th>{t('status')}</th>
+                  <th>{t('ownerLabel')}</th>
+                  <th>{t('purchasedAt')}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {accounts.map((a) => (
+                  <tr key={a.id} className="cursor-pointer border-b border-[var(--color-line)] transition-colors last:border-0 hover:bg-[var(--color-panel)]/60 [&>td]:px-4 [&>td]:py-3.5" onClick={() => navigate(`accounts/${a.id}`)}>
+                    <td><span className="display-type editorial-link text-[15px] font-semibold">{a.name}</span></td>
+                    <td className="text-[var(--color-ink-soft)]">{a.category}</td>
+                    <td><Badge tone={statusTone[a.status]}>{t(`status${a.status === 'warming' ? 'Warming' : a.status === 'active' ? 'Active' : 'Sealed'}`)}</Badge></td>
+                    <td className="text-[var(--color-ink-soft)]">{boot?.users.find((u) => u.id === a.ownerId)?.displayName ?? t('ownerNone')}</td>
+                    <td className="num whitespace-nowrap text-[var(--color-ink-soft)]">{fmtDate(a.purchasedAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
-      </Card>
+      </section>
     </div>
   );
 }
@@ -138,7 +154,7 @@ function NewAccountCard({ onCreated }: { onCreated: () => void }) {
             </Select>
           </Field>
         </div>
-        <p className="text-xs text-ink-400">{t('autoPurchaseHint')}</p>
+        <p className="text-[12px] leading-5 text-[var(--color-ink-faint)]">{t('autoPurchaseHint')}</p>
         <div><Btn type="submit" variant="primary" loading={saving}>{t('create')}</Btn></div>
       </form>
     </Card>
