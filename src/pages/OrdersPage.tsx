@@ -1,9 +1,11 @@
-// 广告订单页（S3）：列表 + 筛选 + 新建/编辑（客户可顺手新建）+ 多选批量删除浮动条
+// 广告订单页（S3）：版式照搬 gb-pmo —— 刊头 + 编辑部表格 + 筛选/新建入刊头 actions；
+// 新建/编辑（客户可顺手新建）+ 多选批量删除浮动条
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useStore } from '../store';
 import { api } from '../api';
 import { fmtDate, parseYuan, centsToYuanInput, dateInputToTs, tsToDateInput } from '../format';
-import { Amount, Btn, Card, ConfirmModal, Field, Modal, Select, Spinner, TextInput } from '../components/ui';
+import { Amount, Btn, ConfirmModal, Field, Modal, Select, Spinner, TextInput } from '../components/ui';
+import { PageMasthead } from '../components/editorial';
 import type { Account, AdOrder, CustomerListItem } from '../types';
 
 export function OrdersPage() {
@@ -63,55 +65,70 @@ export function OrdersPage() {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <Card
-        title={t('orderList')}
-        extra={
-          <div className="flex gap-2">
-            <Select aria-label={t('channel')} value={channel} onChange={(e) => setChannel(e.target.value)} className="w-auto py-1 text-xs">
+    <div className="space-y-8 md:space-y-10">
+      <PageMasthead
+        kicker={t('ordersKicker')}
+        title={t('navOrders')}
+        description={t('ordersDesc')}
+        aside={(
+          <div className="md:border-l md:border-[var(--color-line-strong)] md:pl-5">
+            <div className="text-[10px] font-semibold tracking-[0.16em] text-[var(--color-ink-faint)]">ORDER INDEX</div>
+            <div className="num mt-2 text-[12px] text-[var(--color-ink-soft)]">{orders.length} {t('ordersUnit')}</div>
+          </div>
+        )}
+        actions={(
+          <>
+            <Select aria-label={t('channel')} value={channel} onChange={(e) => setChannel(e.target.value)} className="w-auto! rounded-full py-1.5 text-[12px]">
               <option value="">{t('all')}{t('channel')}</option>
               <option value="private">{t('channelPrivate')}</option>
               <option value="platform">{t('channelPlatform')}</option>
             </Select>
-            <Btn variant="primary" onClick={() => setEditing('new')}>{t('newOrder')}</Btn>
-          </div>
-        }
-      >
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-xs text-ink-400">
-              <th className="w-8 py-1" />
-              <th className="py-1">{t('publishedAt')}</th>
-              <th className="py-1">{t('account')}</th>
-              <th className="py-1">{t('customer')}</th>
-              <th className="py-1">{t('brand')}</th>
-              <th className="py-1">{t('channel')}</th>
-              <th className="py-1 text-right">{t('amount')}</th>
-              <th className="py-1">{t('actions')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((o) => (
-              <tr key={o.id} className="border-t border-black/5">
-                <td className="py-1.5">
-                  <input type="checkbox" aria-label={`select-${o.id}`} checked={selected.has(o.id)} onChange={() => toggle(o.id)} />
-                </td>
-                <td className="py-1.5 num">{fmtDate(o.publishedAt)}</td>
-                <td className="py-1.5">{accountName(o.accountId)}</td>
-                <td className="py-1.5">{customerName(o.customerId)}</td>
-                <td className="py-1.5">{o.brand ?? '—'}</td>
-                <td className="py-1.5 text-ink-600">{o.channel === 'private' ? t('channelPrivate') : t('channelPlatform')}</td>
-                <td className="py-1.5 text-right"><Amount cents={o.amountCents} /></td>
-                <td className="py-1.5"><Btn onClick={() => setEditing(o)}>{t('edit')}</Btn></td>
+            <Btn variant="primary" onClick={() => setEditing('new')}>+ {t('newOrder')}</Btn>
+          </>
+        )}
+      />
+
+      <section className="editorial-enter-late">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-y border-[var(--color-line)] py-4">
+          <div className="text-[13px] font-semibold tracking-[-0.01em]">{t('orderList')}</div>
+        </div>
+        <div className="overflow-x-auto border-b border-[var(--color-line-strong)] bg-[var(--color-card)]/45">
+          <table className="w-full min-w-[52rem] text-[13px]">
+            <thead className="bg-[var(--color-panel)]/45 text-left text-[10px] font-medium tracking-[0.08em] text-[var(--color-ink-soft)]">
+              <tr className="border-b border-[var(--color-line)] [&>th]:whitespace-nowrap [&>th]:px-4 [&>th]:py-3">
+                <th className="w-8" />
+                <th>{t('publishedAt')}</th>
+                <th>{t('account')}</th>
+                <th>{t('customer')}</th>
+                <th>{t('brand')}</th>
+                <th>{t('channel')}</th>
+                <th className="text-right">{t('amount')}</th>
+                <th>{t('actions')}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </Card>
+            </thead>
+            <tbody>
+              {orders.map((o) => (
+                <tr key={o.id} className="border-b border-[var(--color-line)] transition-colors last:border-0 hover:bg-[var(--color-panel)]/60 [&>td]:px-4 [&>td]:py-3.5">
+                  <td>
+                    <input type="checkbox" aria-label={`select-${o.id}`} checked={selected.has(o.id)} onChange={() => toggle(o.id)} className="accent-[var(--color-brand)]" />
+                  </td>
+                  <td className="num whitespace-nowrap">{fmtDate(o.publishedAt)}</td>
+                  <td><span className="display-type text-[15px] font-semibold">{accountName(o.accountId)}</span></td>
+                  <td>{customerName(o.customerId)}</td>
+                  <td>{o.brand ?? '—'}</td>
+                  <td className="text-[var(--color-ink-soft)]">{o.channel === 'private' ? t('channelPrivate') : t('channelPlatform')}</td>
+                  <td className="text-right"><Amount cents={o.amountCents} /></td>
+                  <td><Btn onClick={() => setEditing(o)}>{t('edit')}</Btn></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
       {/* 批量操作浮动条 */}
       {selected.size > 0 && (
-        <div className="anim-pop fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-3 rounded-lg bg-ink-900 px-4 py-2.5 text-sm text-white shadow-xl">
+        <div className="pop-in fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-3 rounded-full border border-[var(--color-ink)] bg-[var(--color-ink)] px-5 py-2.5 text-[13px] text-[var(--color-card)] shadow-[var(--shadow-float)]">
           <span>{t('selected', { n: selected.size })}</span>
           <Btn variant="danger" onClick={() => setBatchConfirm(true)}>{t('batchDelete')}</Btn>
         </div>
@@ -219,7 +236,7 @@ function OrderModal({ order, accounts, customers, onClose, onSaved }: {
             </Select>
             {!order && (
               newCustomer ? (
-                <div className="flex flex-col gap-2 rounded-md bg-paper p-2">
+                <div className="flex flex-col gap-2 rounded-[3px] bg-[var(--color-panel)] p-2.5">
                   <TextInput placeholder={t('customerName')} value={newCustomer.name} onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })} />
                   <div className="flex gap-2">
                     <Select value={newCustomer.type} onChange={(e) => setNewCustomer({ ...newCustomer, type: e.target.value })}>
